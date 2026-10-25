@@ -1,0 +1,187 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+<meta name="theme-color" content="#173f2b">
+<title>栄冠は君に Final（笑） 第5版</title>
+<style>
+:root{--green:#173f2b;--green2:#28613e;--gold:#e6bd55;--paper:#f5f2e8;--ink:#17231b;--muted:#647067;--red:#a7352c}
+*{box-sizing:border-box}
+body{margin:0;background:#e8e9e2;color:var(--ink);font-family:system-ui,-apple-system,"Noto Sans JP",sans-serif}
+header{background:linear-gradient(135deg,#102d20,#28613e);color:#fff;padding:18px 16px 15px;border-bottom:4px solid var(--gold)}
+header .eyebrow{font-size:11px;letter-spacing:.16em;color:#d9c77f}
+h1{font-size:23px;margin:5px 0 3px} header p{margin:0;font-size:12px;color:#dce8dd}
+main{max-width:900px;margin:auto;padding:12px;display:grid;gap:12px}
+.panel{background:#fff;border-radius:14px;padding:14px;box-shadow:0 2px 9px #17231b12}
+h2{font-size:17px;margin:0 0 10px;color:var(--green)}
+h3{font-size:14px;margin:0 0 5px}
+button,select,input{font:inherit}
+button{border:0;border-radius:10px;padding:11px 12px;font-weight:700;cursor:pointer;background:var(--green);color:#fff}
+button.secondary{background:#e6ece5;color:var(--green)}
+button.gold{background:var(--gold);color:#2b281b}
+button:disabled{opacity:.45}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.row>*{flex:1}
+label{display:block;font-size:12px;color:var(--muted);margin:7px 0 4px}
+input,select{width:100%;padding:10px;border:1px solid #cbd3ca;border-radius:8px;background:#fff;color:var(--ink)}
+.small{font-size:12px;color:var(--muted)}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:7px}
+.stat{background:#f1f4ee;padding:10px;border-radius:10px}
+.stat strong{display:block;font-size:17px;color:var(--green)}
+.stat span{font-size:11px;color:var(--muted)}
+.notice{padding:10px;border-radius:9px;background:#f9f2d9;color:#5b4a17;font-size:13px}
+.tabs{display:flex;gap:6px;overflow:auto;padding-bottom:3px}
+.tabs button{white-space:nowrap;flex:0 0 auto}
+.tabs button.active{background:var(--gold);color:#2b281b}
+.monthgrid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px}
+.month{border:1px solid #d6ddd4;border-radius:10px;padding:9px;background:#fff;text-align:left;color:var(--ink);min-height:100px}
+.month.current{border:2px solid var(--gold);background:#fff9e8}
+.month.past{background:#f0f2ee}
+.month .mname{font-size:13px;font-weight:800;color:var(--green)}
+.month .mdate{font-size:10px;color:var(--muted);margin:3px 0 6px}
+.month .event{font-size:11px;line-height:1.45}
+.month .tag{display:inline-block;font-size:9px;background:#e8efe7;color:#315a3b;padding:2px 5px;border-radius:4px;margin-top:5px}
+.log{display:grid;gap:7px;max-height:260px;overflow:auto}
+.logitem{border-left:3px solid var(--gold);background:#f7f8f4;padding:8px 10px;border-radius:0 8px 8px 0;font-size:12px}
+.logitem strong{color:var(--green)}
+.hidden{display:none!important}
+footer{text-align:center;font-size:11px;color:var(--muted);padding:0 12px 20px}
+@media(min-width:680px){main{grid-template-columns:1fr 1fr}.wide{grid-column:1/-1}.monthgrid{grid-template-columns:repeat(4,minmax(0,1fr))}}
+</style>
+</head>
+<body>
+<header>
+  <div class="eyebrow">HIGH SCHOOL BASEBALL MANAGEMENT</div>
+  <h1>栄冠は君に Final（笑）</h1>
+  <p>第5版 — 年間スケジュール一覧つき・監督育成シミュレーション</p>
+</header>
+<main>
+<section class="panel" id="setup">
+  <h2>監督就任</h2>
+  <div class="row">
+    <div><label for="pref">都道府県</label><select id="pref"></select></div>
+    <div><label for="school">高校名</label><input id="school" value="白浜高校" maxlength="24"></div>
+  </div>
+  <label for="coach">監督名</label><input id="coach" value="新監督" maxlength="16">
+  <label for="difficulty">難易度</label><select id="difficulty"><option>標準</option><option>初心者向け</option><option>名門の壁</option></select>
+  <div class="row" style="margin-top:12px"><button id="start">監督に就任する</button><button class="secondary" id="loadSetup">セーブデータを読み込む</button></div>
+  <p class="small">※学校名は自由入力できます。全国の実在校データはまだ収録途中のため、学校名を入力して遊ぶ試作版です。</p>
+</section>
+<section class="panel hidden" id="dashboard">
+  <h2 id="teamTitle">学校情報</h2>
+  <div class="stats">
+    <div class="stat"><span>年度</span><strong id="year">1年目</strong></div>
+    <div class="stat"><span>日付</span><strong id="date">4月1日</strong></div>
+    <div class="stat"><span>チーム力</span><strong id="power">50</strong></div>
+  </div>
+  <p id="statusLine" class="notice" style="margin:10px 0">春の練習が始まった。</p>
+  <div class="row">
+    <button id="advance">1日進める ▶</button>
+    <button class="gold" id="practice">練習する ⚾</button>
+  </div>
+  <div class="row" style="margin-top:8px">
+    <button class="secondary" id="save">セーブ</button>
+    <button class="secondary" id="resetYear">次年度へ（テスト用）</button>
+  </div>
+  <p class="small">日付を進めると月ごとのイベントが発生します。次年度へボタンは動作確認用です。</p>
+</section>
+<section class="panel wide hidden" id="schedulePanel">
+  <h2>年間スケジュール</h2>
+  <p class="small">月を押すと、その月の予定と進行状況を確認できます。金色の枠が現在の月です。</p>
+  <div class="monthgrid" id="monthgrid"></div>
+  <div id="monthDetail" class="notice" style="margin-top:10px">月を選ぶと詳細が表示されます。</div>
+</section>
+<section class="panel hidden" id="actionsPanel">
+  <h2>監督メニュー</h2>
+  <div class="tabs">
+    <button class="active" data-tab="players">選手団</button>
+    <button data-tab="events">イベント記録</button>
+  </div>
+  <div id="playersTab">
+    <div class="stats" style="margin-top:8px">
+      <div class="stat"><span>部員</span><strong id="members">18人</strong></div>
+      <div class="stat"><span>士気</span><strong id="morale">60</strong></div>
+      <div class="stat"><span>練習成果</span><strong id="training">0</strong></div>
+    </div>
+    <p class="small">日々の練習でチーム力が上がります。春の入部、夏・秋の大会、卒業・新入生イベントは日付進行で発生します。</p>
+  </div>
+  <div id="eventsTab" class="hidden"><div id="log" class="log"></div></div>
+</section>
+</main>
+<footer>栄冠は君に Final（笑） 第5版 — 個人制作の試作ゲーム</footer>
+<script>
+const prefectures = "北海道,青森県,岩手県,宮城県,秋田県,山形県,福島県,茨城県,栃木県,群馬県,埼玉県,千葉県,東京都,神奈川県,新潟県,富山県,石川県,福井県,山梨県,長野県,岐阜県,静岡県,愛知県,三重県,滋賀県,京都府,大阪府,兵庫県,奈良県,和歌山県,鳥取県,島根県,岡山県,広島県,山口県,徳島県,香川県,愛媛県,高知県,福岡県,佐賀県,長崎県,熊本県,大分県,宮崎県,鹿児島県,沖縄県".split(",");
+const monthPlans = [
+ {name:"4月",event:"新入生入部・新年度始動",detail:"新入生が入部。チームの雰囲気を整え、基礎練習を始めよう。",tag:"新年度"},
+ {name:"5月",event:"春の練習試合",detail:"練習試合で選手の調子を確認。守備と連携を磨く時期。",tag:"練習試合"},
+ {name:"6月",event:"夏大会前の強化月間",detail:"夏の大会に向けて実戦練習。疲労管理も大切。",tag:"強化"},
+ {name:"7月",event:"夏の地方大会",detail:"夏の大会が始まる。チーム力と士気が結果に影響する。",tag:"公式戦"},
+ {name:"8月",event:"夏大会・新チーム準備",detail:"大会の余韻を振り返り、秋に向けた課題を整理。",tag:"大会後"},
+ {name:"9月",event:"秋季大会",detail:"新チームの力を試す秋季大会。若手の成長に注目。",tag:"公式戦"},
+ {name:"10月",event:"基礎力アップ",detail:"走攻守の基礎練習。弱点を補強して冬に備える。",tag:"強化"},
+ {name:"11月",event:"練習試合・個人面談",detail:"選手ごとの課題を整理。冬季練習の目標を決めよう。",tag:"チーム作り"},
+ {name:"12月",event:"冬季トレーニング開始",detail:"体力・基礎技術を鍛える。継続が春の成長につながる。",tag:"冬練"},
+ {name:"1月",event:"冬練習・新年始動",detail:"新年の目標を設定。地道な練習でチーム力を底上げ。",tag:"冬練"},
+ {name:"2月",event:"春に向けた実戦準備",detail:"守備位置や打順の候補を考え、春の練習試合に備える。",tag:"準備"},
+ {name:"3月",event:"卒業式・年度まとめ",detail:"3年生が卒業。1年を振り返り、次年度の新入生を迎える。",tag:"卒業"}
+];
+const $=id=>document.getElementById(id);
+const state={started:false,pref:"福岡県",school:"白浜高校",coach:"新監督",difficulty:"標準",year:1,month:4,day:1,power:50,members:18,morale:60,training:0,logs:[],selectedMonth:4};
+$("pref").innerHTML=prefectures.map(p=>`<option>${p}</option>`).join(""); $("pref").value=state.pref;
+function log(msg){state.logs.unshift({date:`${state.year}年目 ${state.month}月${state.day}日`,msg});state.logs=state.logs.slice(0,80);renderLog();}
+function planFor(m){return monthPlans[(m-4+12)%12];}
+function renderSchedule(){
+ const grid=$("monthgrid");grid.innerHTML="";
+ monthPlans.forEach((p,i)=>{
+  const m=((i+3)%12)+1; const current=m===state.month; const past=(state.year>1&&m<state.month)||(m<state.month);
+  const b=document.createElement("button");b.className="month"+(current?" current":"")+(past?" past":"");
+  b.innerHTML=`<div class="mname">${p.name}</div><div class="mdate">${current?"▶ 現在の月":(past?"進行済み":"予定")}</div><div class="event">${p.event}</div><span class="tag">${p.tag}</span>`;
+  b.onclick=()=>{state.selectedMonth=m;renderMonthDetail(m);};grid.appendChild(b);
+ });renderMonthDetail(state.selectedMonth);
+}
+function renderMonthDetail(m){const p=planFor(m);$("monthDetail").innerHTML=`<strong>${m}月の予定：${p.event}</strong><br>${p.detail}<br><span class="small">現在：${state.year}年目 ${state.month}月${state.day}日</span>`;}
+function renderLog(){$("log").innerHTML=state.logs.length?state.logs.map(x=>`<div class="logitem"><strong>${x.date}</strong><br>${x.msg}</div>`).join(""):'<p class="small">まだイベント記録はありません。</p>';}
+function render(){
+ $("year").textContent=state.year+"年目";$("date").textContent=state.month+"月"+state.day+"日";$("power").textContent=state.power;
+ $("members").textContent=state.members+"人";$("morale").textContent=state.morale;$("training").textContent=state.training;
+ $("teamTitle").textContent=`${state.pref}・${state.school}　／　監督 ${state.coach}`;
+ renderSchedule();renderLog();
+}
+function startGame(load=false){
+ if(load){const raw=localStorage.getItem("eikanFinalV5");if(!raw){alert("セーブデータが見つかりません。先に監督就任してセーブしてください。");return;}Object.assign(state,JSON.parse(raw));}
+ else{state.pref=$("pref").value;state.school=$("school").value.trim()||"白浜高校";state.coach=$("coach").value.trim()||"新監督";state.difficulty=$("difficulty").value;state.year=1;state.month=4;state.day=1;state.power=50;state.members=18;state.morale=60;state.training=0;state.logs=[];log("監督に就任。新年度のチーム作りが始まった。");}
+ state.started=true;$("setup").classList.add("hidden");$("dashboard").classList.remove("hidden");$("schedulePanel").classList.remove("hidden");$("actionsPanel").classList.remove("hidden");render();
+}
+function monthEvent(){
+ const m=state.month;let msg="";
+ if(m===4){state.members+=Math.floor(4+Math.random()*5);state.morale=Math.min(100,state.morale+5);msg=`新入生が入部！部員は${state.members}人になった。`;}
+ if(m===7){const score=Math.max(0,Math.min(100,Math.round(state.power*0.75+state.morale*0.25+(Math.random()*30-15))));msg=`夏の地方大会。チーム力を発揮！大会評価は${score}。${score>=75?"上位進出の手応え！":score>=55?"悔しさを秋にぶつけよう。":"課題が見つかった。練習で巻き返そう。"}`;state.morale=Math.max(35,Math.min(100,state.morale+(score>=70?8:-5)));}
+ if(m===9){const score=Math.round(state.power*0.7+state.morale*0.3+(Math.random()*24-12));msg=`秋季大会。チームの現在地を確認。大会評価は${score}。`;}
+ if(m===3){const grads=Math.min(9,Math.max(3,Math.floor(state.members*0.22)));state.members=Math.max(12,state.members-grads);msg=`卒業式。${grads}人が卒業し、新年度への準備が始まる。`;}
+ if(m===12){state.morale=Math.max(35,state.morale-2);msg="冬季トレーニング開始。地道な練習で春に備える。";}
+ if(m===5)msg="春の練習試合。連携を確認し、課題を記録した。";
+ if(m===6)msg="夏大会前の強化月間。実戦形式の練習に取り組んだ。";
+ if(m===8)msg="夏大会の振り返り。新チームに向けて課題を整理した。";
+ if(m===10)msg="基礎力アップ月間。守備・走塁の基礎を磨いた。";
+ if(m===11)msg="選手面談。冬の目標と個人課題を決めた。";
+ if(m===1)msg="新年始動。チーム全員で今年の目標を確認した。";
+ if(m===2)msg="春に向けた実戦準備。守備位置や打順候補を確認した。";
+ if(msg){log(msg);$("statusLine").textContent=msg;}
+}
+function advanceDay(){
+ if(!state.started)return;
+ state.day++;
+ const days=[31,(state.year%4===0?29:28),31,30,31,30,31,31,30,31,30,31];
+ if(state.day>days[state.month-1]){state.day=1;state.month++;if(state.month>12)state.month=1;monthEvent();}
+ render();
+}
+$("start").onclick=()=>startGame(false);$("loadSetup").onclick=()=>startGame(true);
+$("advance").onclick=advanceDay;
+$("practice").onclick=()=>{const gain=state.difficulty==="初心者向け"?2:state.difficulty==="名門の壁"?1:1+Math.floor(Math.random()*2);state.training++;state.power=Math.min(100,state.power+gain);state.morale=Math.min(100,state.morale+1);const msg=`練習を実施。チーム力 +${gain}。`;log(msg);$("statusLine").textContent=msg;render();};
+$("save").onclick=()=>{localStorage.setItem("eikanFinalV5",JSON.stringify(state));alert("セーブしました！この端末・このブラウザに保存されます。");};
+$("resetYear").onclick=()=>{if(confirm("次年度へ進みますか？（動作確認用）")){state.year++;state.month=4;state.day=1;state.members+=5;state.power=Math.max(35,state.power-5);state.morale=60;log("新年度。新入生を迎えて新チームが始動した。");$("statusLine").textContent="新年度が始まりました。";render();}};
+document.querySelectorAll("[data-tab]").forEach(btn=>btn.onclick=()=>{document.querySelectorAll("[data-tab]").forEach(b=>b.classList.toggle("active",b===btn));$("playersTab").classList.toggle("hidden",btn.dataset.tab!=="players");$("eventsTab").classList.toggle("hidden",btn.dataset.tab!=="events");});
+</script>
+</body>
+</html>
